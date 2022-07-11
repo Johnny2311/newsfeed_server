@@ -1,12 +1,15 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { Article, ArticleDocument } from "./schemas/article.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { lastValueFrom } from "rxjs";
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ArticleService {
+  private readonly logger = new Logger(ArticleService.name)
+
   constructor(@InjectModel(Article.name) private articleModel: Model<ArticleDocument>, private httpService: HttpService) {}
 
   async findAll(): Promise<Article[]> {
@@ -22,7 +25,9 @@ export class ArticleService {
       .exec();
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
   async fetch(): Promise<Article[]> {
+    this.logger.debug('Fetching data from API...')
     try {
       const url = 'https://hn.algolia.com/api/v1/search_by_date?query=nodejs';
       const source = this.httpService.get(url);
@@ -67,9 +72,11 @@ export class ArticleService {
       );
 
       if (newArticles.length > 0) {
+        this.logger.debug(`Saved ${newArticles.length} new articles`)
         return await this.articleModel.insertMany(newArticles);
       }
 
+      this.logger.debug(`No new articles`)
       return [];
     } catch (e) {
       throw new InternalServerErrorException(e)
