@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   main:
-    container_name: main
     build:
       context: .
       target: development
@@ -18,10 +17,15 @@ services:
       - mongo
 
   mongo:
-    container_name: mongo
     image: mongo:5.0.6
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     ports:
-      - "27017:27017"
+      - ${MONGO_PORT}:${MONGO_PORT}
     volumes:
       - mongodb:/data/db
 volumes:

@@ -5,7 +5,7 @@ import { ArticleModule } from './article/article.module';
 import { MongooseModule} from '@nestjs/mongoose';
 
 @Module({
-  imports: [ArticleModule, MongooseModule.forRoot('mongodb://localhost:27017/')],
+  imports: [ArticleModule, MongooseModule.forRoot(`mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@mongo:27017/`)],
   controllers: [AppController],
   providers: [AppService],
 })
