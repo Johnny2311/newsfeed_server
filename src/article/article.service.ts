@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { Article, ArticleDocument } from "./schemas/article.schema";
 import { InjectModel } from "@nestjs/mongoose";
@@ -12,9 +12,20 @@ export class ArticleService {
 
   constructor(@InjectModel(Article.name) private articleModel: Model<ArticleDocument>, private httpService: HttpService) {}
 
-  async findAll(): Promise<Article[]> {
+  async findAll(page = 1, size = 10): Promise<Article[]> {
+
+    if (page <= 0 || size <= 0)
+      throw new HttpException('Pagination error', HttpStatus.BAD_REQUEST);
+
+    if (size > 100)
+      size = 100;
+
+    const amountToSkip: number = (page - 1) * size;
     return await this.articleModel
       .find({ is_deleted: false })
+      .sort({ created_at_i: -1 })
+      .skip(amountToSkip)
+      .limit(size)
       .exec();
   }
 

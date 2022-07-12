@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Delete, Query } from "@nestjs/common";
 import { ArticleService } from './article.service';
 
 @Controller('article')
@@ -6,8 +6,8 @@ export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Get()
-  findAll() {
-    return this.articleService.findAll();
+  findAll(@Query('page') page: number, @Query('size') size: number) {
+    return this.articleService.findAll(page, size);
   }
 
   @Delete(':id')
