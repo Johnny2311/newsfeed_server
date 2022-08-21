@@ -32,7 +32,7 @@ export class ArticleService {
   async remove(id: string): Promise<Article> {
     // soft delete
     return await this.articleModel
-      .findOneAndUpdate({ _id: id }, { is_deleted: true })
+      .findByIdAndUpdate(id, { is_deleted: true }, {new: true})
       .exec();
   }
 
