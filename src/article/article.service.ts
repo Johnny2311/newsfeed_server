@@ -12,7 +12,7 @@ export class ArticleService {
 
   constructor(@InjectModel(Article.name) private articleModel: Model<ArticleDocument>, private httpService: HttpService) {}
 
-  async findAll(page = 1, size = 10): Promise<Article[]> {
+  async findAll(page = 1, size = 10): Promise<any> {
 
     if (page <= 0 || size <= 0)
       throw new HttpException('Pagination error', HttpStatus.BAD_REQUEST);
@@ -20,13 +20,20 @@ export class ArticleService {
     if (size > 100)
       size = 100;
 
+    const count = await this.articleModel.count({ is_deleted: false });
+
     const amountToSkip: number = (page - 1) * size;
-    return await this.articleModel
+    const articles = await this.articleModel
       .find({ is_deleted: false })
       .sort({ created_at_i: -1 })
       .skip(amountToSkip)
       .limit(size)
       .exec();
+
+    return {
+      count,
+      articles
+    }
   }
 
   async remove(id: string): Promise<Article> {
